@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Edeclaration</string>
+    <string name="menu_favorites">Favorites</string>
+    <string name="item_btn_pdf">Open pdf</string>
+    <string name="item_btn_star">Put to favorites</string>
+    <string name="menu_search">Search</string>
+</resources>
