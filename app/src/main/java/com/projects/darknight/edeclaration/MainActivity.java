@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void getRequest() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Request");
+        builder.setTitle("Input your key word, put empty request to get all declarations");
         final EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_TEXT);
         builder.setView(input);
@@ -94,15 +94,14 @@ public class MainActivity extends AppCompatActivity {
         call.enqueue(new Callback<WorkerResponse>() {
             @Override
             public void onResponse(@NonNull Call<WorkerResponse> call, @NonNull Response<WorkerResponse> response) {
-                if (!response.isSuccessful()) {
+                if (response.isSuccessful()) {
                     Log.d("URL", "Successful response: " + String.valueOf(response.code()));
-                    if (response.body() != null) {
+                    if (response.body().getWorkers() != null) {
+                        adapter.clearWorkers();
                         adapter.setWorkersList(response.body().getWorkers());
-                    } else
-                        Toast.makeText(MainActivity.this, "Response null", Toast.LENGTH_SHORT).show();
-                } else {
+                    } else {
                         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                        builder.setMessage("Sorry, nothing found with your request.")
+                        builder.setMessage("Your request return nothing")
                                 .setCancelable(false)
                                 .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                                     @Override
@@ -112,6 +111,7 @@ public class MainActivity extends AppCompatActivity {
                                 })
                                 .create().show();
                     }
+                }
             }
 
             @Override

@@ -25,26 +25,27 @@ public class WorkerListAdapter extends RecyclerView.Adapter<WorkerListAdapter.Wo
     private Context mContext;
     private String whichActivity;
 
-    public WorkerListAdapter(Context context, String activity){
+    public WorkerListAdapter(Context context, String activity) {
         mContext = context;
         whichActivity = activity;
     }
 
-    public void setWorkersList(List<Worker> workers){
+    public void setWorkersList(List<Worker> workers) {
         workersList.addAll(workers);
         notifyDataSetChanged();
     }
 
-    public void clearWorkers(){
+    public void clearWorkers() {
         workersList.clear();
         notifyDataSetChanged();
     }
 
-    public void clearWorkers(DatabaseHelper databaseHelper){
+    public void clearWorkers(DatabaseHelper databaseHelper) {
         databaseHelper.deleteAll();
         workersList.clear();
         notifyDataSetChanged();
     }
+
     @NonNull
     @Override
     public WorkerListAdapter.WorkerListViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -58,8 +59,14 @@ public class WorkerListAdapter extends RecyclerView.Adapter<WorkerListAdapter.Wo
 
         holder.firtName.setText(worker.getFirstName());
         holder.lastName.setText(worker.getLastName());
-        holder.workPlace.setText(worker.getWorkPlace());
-        holder.position.setText(worker.getPosition());
+        if (worker.getWorkPlace() == null || worker.getWorkPlace().equals("") || worker.getWorkPlace().equals("ні"))
+            holder.workPlace.setVisibility(View.GONE);
+        else
+            holder.workPlace.setText(worker.getWorkPlace());
+        if (worker.getPosition() == null || worker.getPosition().equals("") || worker.getPosition().equals("ні"))
+            holder.position.setVisibility(View.GONE);
+        else
+            holder.position.setText(worker.getPosition());
         holder.addToFavorite.setImageResource(R.drawable.ic_star_off);
         holder.openPdf.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -69,7 +76,7 @@ public class WorkerListAdapter extends RecyclerView.Adapter<WorkerListAdapter.Wo
                 mContext.startActivity(browserIntent);
             }
         });
-        if(whichActivity.equals("favorites")) {
+        if (whichActivity.equals("favorites")) {
             holder.addToFavorite.setVisibility(View.GONE);
         }
         holder.addToFavorite.setOnClickListener(new View.OnClickListener() {
@@ -87,7 +94,7 @@ public class WorkerListAdapter extends RecyclerView.Adapter<WorkerListAdapter.Wo
         return workersList.size();
     }
 
-    public class WorkerListViewHolder extends RecyclerView.ViewHolder {
+    class WorkerListViewHolder extends RecyclerView.ViewHolder {
 
         private TextView firtName;
         private TextView lastName;
@@ -96,7 +103,7 @@ public class WorkerListAdapter extends RecyclerView.Adapter<WorkerListAdapter.Wo
         private ImageButton addToFavorite;
         private ImageButton openPdf;
 
-        public WorkerListViewHolder(View itemview) {
+        WorkerListViewHolder(View itemview) {
             super(itemview);
             firtName = itemview.findViewById(R.id.itemFirstName);
             lastName = itemview.findViewById(R.id.itemLastName);
