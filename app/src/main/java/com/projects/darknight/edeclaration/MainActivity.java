@@ -20,6 +20,8 @@ import com.projects.darknight.edeclaration.api.GetDataRetrofit;
 import com.projects.darknight.edeclaration.api.RetrofitClient;
 import com.projects.darknight.edeclaration.pojo.WorkerResponse;
 
+import java.io.IOException;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -54,7 +56,10 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(this, Favorites.class));
                 return true;
             case R.id.searchMenuItem:
-                getRequest();
+                if (checkInternetConnection())
+                    getRequest();
+                else
+                    simpleDialogShow("Please check your internet connection");
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -63,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void getRequest() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Input your key word, put empty request to get all declarations");
+        builder.setTitle("Input your key word or leave empty to get all declarations");
         final EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_TEXT);
         builder.setView(input);
@@ -86,39 +91,54 @@ public class MainActivity extends AppCompatActivity {
         builder.show();
     }
 
-    void getData(String request){
+    void getData(String request) {
         GetDataRetrofit service = RetrofitClient.getRetrofitInstance().create(GetDataRetrofit.class);
 
         Call<WorkerResponse> call = service.getWorkers("?q=" + request);
-        Log.d("URL", call.request().url() + "");
         call.enqueue(new Callback<WorkerResponse>() {
             @Override
             public void onResponse(@NonNull Call<WorkerResponse> call, @NonNull Response<WorkerResponse> response) {
                 if (response.isSuccessful()) {
-                    Log.d("URL", "Successful response: " + String.valueOf(response.code()));
                     if (response.body().getWorkers() != null) {
                         adapter.clearWorkers();
                         adapter.setWorkersList(response.body().getWorkers());
-                    } else {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                        builder.setMessage("Your request return nothing")
-                                .setCancelable(false)
-                                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        dialog.dismiss();
-                                    }
-                                })
-                                .create().show();
-                    }
-                }
+                    } else
+                        simpleDialogShow("Your request return nothing");
+                } else
+                    simpleDialogShow("Some problems with server.\nPlese try again later!");
+
             }
 
             @Override
             public void onFailure(@NonNull Call<WorkerResponse> call, @NonNull Throwable t) {
-                Toast.makeText(MainActivity.this, "Something went wrong...Please try later!", Toast.LENGTH_SHORT).show();
-                Log.d("URL", "Error " + t.getMessage());
+                simpleDialogShow("Some problems with server.\nPlese try again later!");
             }
         });
+    }
+
+    public void simpleDialogShow(String message) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        builder.setMessage(message)
+                .setCancelable(false)
+                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                })
+                .create().show();
+    }
+
+    public boolean checkInternetConnection() {
+        Runtime runtime = Runtime.getRuntime();
+        try {
+            Process ipProcess = runtime.exec("/system/bin/ping -c 1 8.8.8.8");
+            int exitValue = ipProcess.waitFor();
+            return (exitValue == 0);
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 }
